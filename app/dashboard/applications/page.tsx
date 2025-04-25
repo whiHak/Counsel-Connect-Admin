@@ -20,6 +20,16 @@ interface CounselorApplication {
     specializations: string[];
     yearsOfExperience: number;
     licenseNumber: string;
+    licenseUrl?: string;
+    resumeUrl?: string;
+  };
+  documents: {
+    identificationUrl: string;
+    photographUrl: string;
+    workExperienceUrl: string;
+    professionalLicenseUrl: string;
+    educationalCredentialsUrl: string;
+    cvUrl: string;
   };
   status: "PENDING" | "APPROVED" | "REJECTED";
   submittedAt: string;
@@ -75,6 +85,15 @@ export default function ApplicationsPage() {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const handleDownload = (url: string, documentName: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${documentName}.${url.split('.').pop()}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -190,6 +209,78 @@ export default function ApplicationsPage() {
                 <p>License Number: {selectedApplication.professionalInfo.licenseNumber}</p>
                 <p>Experience: {selectedApplication.professionalInfo.yearsOfExperience} years</p>
                 <p>Specializations: {selectedApplication.professionalInfo.specializations.join(", ")}</p>
+              </div>
+              
+              {/* Documents Section */}
+              <div className="col-span-2 mt-4">
+                <h4 className="font-medium mb-2">Documents</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <h5 className="font-medium mb-2">Professional License</h5>
+                    <button
+                      onClick={() => handleDownload(selectedApplication.documents.professionalLicenseUrl, 'professional_license')}
+                      className="flex items-center text-blue-600 hover:text-blue-800"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Download
+                    </button>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h5 className="font-medium mb-2">Educational Credentials</h5>
+                    <button
+                      onClick={() => handleDownload(selectedApplication.documents.educationalCredentialsUrl, 'educational_credentials')}
+                      className="flex items-center text-blue-600 hover:text-blue-800"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Download
+                    </button>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h5 className="font-medium mb-2">Identification Document</h5>
+                    <button
+                      onClick={() => handleDownload(selectedApplication.documents.identificationUrl, 'identification')}
+                      className="flex items-center text-blue-600 hover:text-blue-800"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Download
+                    </button>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h5 className="font-medium mb-2">Professional Photograph</h5>
+                    <img
+                      src={selectedApplication.documents.photographUrl}
+                      alt="Professional Photograph"
+                      className="w-32 h-32 object-cover rounded-lg mb-2"
+                    />
+                    <button
+                      onClick={() => handleDownload(selectedApplication.documents.photographUrl, 'photograph')}
+                      className="flex items-center text-blue-600 hover:text-blue-800"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Download
+                    </button>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h5 className="font-medium mb-2">Work Experience</h5>
+                    <button
+                      onClick={() => handleDownload(selectedApplication.documents.workExperienceUrl, 'work_experience')}
+                      className="flex items-center text-blue-600 hover:text-blue-800"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Download
+                    </button>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h5 className="font-medium mb-2">CV</h5>
+                    <button
+                      onClick={() => handleDownload(selectedApplication.documents.cvUrl, 'cv')}
+                      className="flex items-center text-blue-600 hover:text-blue-800"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Download
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="mt-4">
