@@ -4,9 +4,14 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { User } from "@/lib/db/schema"
 import connectDB from "@/lib/db/connect"
 
+if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+  throw new Error('Please provide ADMIN_EMAIL and ADMIN_PASSWORD in your .env file');
+}
+
 export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
+    error: "/login", // Redirect back to login page instead of error page
   },
   session: {
     strategy: "jwt",
@@ -21,15 +26,14 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null;
+          throw new Error("Please provide both email and password");
         }
 
-        // For demo purposes, using hardcoded credentials
-        // In production, use environment variables and proper password hashing
-        if (
-          credentials.email === "admin@example.com" &&
-          credentials.password === "admin123"
-        ) {
+        // Check against environment variables
+        const isValidEmail = credentials.email === process.env.ADMIN_EMAIL;
+        const isValidPassword = credentials.password === process.env.ADMIN_PASSWORD;
+
+        if (isValidEmail && isValidPassword) {
           return {
             id: "1",
             email: credentials.email,
