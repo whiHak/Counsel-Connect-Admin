@@ -41,7 +41,8 @@ export async function PATCH(
     if (status === "APPROVED") {
       // Update user role
       await User.findByIdAndUpdate(application.userId, {
-        role: "COUNSELOR"
+        role: "COUNSELOR",
+        image: application.documents.photographUrl
       });
 
       const parsedApplication = JSON.parse(JSON.stringify(application));
