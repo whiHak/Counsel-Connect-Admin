@@ -5,7 +5,9 @@ import {
   CheckCircle, 
   XCircle, 
   ExternalLink,
-  Eye
+  Eye,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 interface CounselorApplication {
@@ -39,16 +41,23 @@ export default function ApplicationsPage() {
   const [applications, setApplications] = useState<CounselorApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState<CounselorApplication | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 10;
 
   useEffect(() => {
     fetchApplications();
-  }, []);
+  }, [page]);
 
   const fetchApplications = async () => {
+    setLoading(true);
     try {
-      const response = await fetch("/api/applications");
+      const response = await fetch(`/api/applications?page=${page}&limit=${limit}`);
       const data = await response.json();
-      setApplications(data);
+      setApplications(data.applications);
+      setTotalPages(data.totalPages);
+      setTotal(data.total);
     } catch (error) {
       console.error("Failed to fetch applications:", error);
     } finally {
@@ -88,11 +97,14 @@ export default function ApplicationsPage() {
   };
 
   const handleDownload = (url: string, documentName: string) => {
+    
     const link = document.createElement('a');
     link.href = url;
     link.download = `${documentName}.${url.split('.').pop()}`;
     document.body.appendChild(link);
-    link.click();
+    //navigate to blank page
+    window.open(url, '_blank');
+    // link.click();
     document.body.removeChild(link);
   };
 
@@ -233,6 +245,31 @@ export default function ApplicationsPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center mt-4">
+        <span className="text-sm text-gray-600">
+          Showing {applications.length ? (page - 1) * limit + 1 : 0} to {Math.min(page * limit, total)} of {total} applications
+        </span>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="text-sm">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-3 py-1 rounded bg-gray-200 text-gray-700 disabled:opacity-50"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
