@@ -12,7 +12,8 @@ const PERIODS = [
 
 export default function DashboardReportsPage() {
   const [period, setPeriod] = useState("monthly");
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [applicationChartData, setApplicationChartData] = useState<any[]>([]);
+  const [userChartData, setUserChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [fromDate, setFromDate] = useState("");
@@ -24,13 +25,12 @@ export default function DashboardReportsPage() {
       const res = await fetch("/api/dashboard/reports/stats", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ period, start: fromDate, end: toDate })
+        body: JSON.stringify({ period, start: fromDate, end: toDate }),
       });
-      console.log("response of the chart request", res);
       if (res.ok) {
-        const data = await res.json();
-        setChartData(data);
-        console.log("chart data", data);
+        const { applicationStats, userStats } = await res.json();
+        setApplicationChartData(applicationStats ?? []);
+        setUserChartData(userStats ?? []);
       }
     } finally {
       setLoading(false);
@@ -111,27 +111,62 @@ export default function DashboardReportsPage() {
         </button>
       </div>
 
-      <div className="bg-white shadow rounded-lg p-4">
-        <p className="text-gray-600">Counselor Applicatitons status for the selected period of time:</p>
-        {chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={chartData} margin={{ top: 20, right: 40, left: 0, bottom: 20 }}>
-              <XAxis dataKey="period" />
-              <YAxis allowDecimals={false} />
-              <CartesianGrid strokeDasharray="3 3" />
-              <Tooltip />
-              <Legend/>
-              <Bar dataKey="total" fill="#3490dc" name="Total" />
-              <Bar dataKey="APPROVED" fill="#38a169" name="Approved" />
-              <Bar dataKey="REJECTED" fill="#e53e3e" name="Rejected" />
-              <Bar dataKey="PENDING" fill="#ecc94b" name="Pending" />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="h-72 w-full flex items-center justify-center text-gray-400 italic">
-            Chart data will appear here.
-          </div>
-        )}
+      <div className="space-y-6">
+        <div className="bg-white shadow rounded-lg p-4">
+          <p className="text-gray-600 mb-4">
+            Counselor applications status for the selected period:
+          </p>
+          {applicationChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart
+                data={applicationChartData}
+                margin={{ top: 20, right: 40, left: 0, bottom: 20 }}
+              >
+                <XAxis dataKey="period" />
+                <YAxis allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="total" fill="#3490dc" name="Total" />
+                <Bar dataKey="APPROVED" fill="#38a169" name="Approved" />
+                <Bar dataKey="REJECTED" fill="#e53e3e" name="Rejected" />
+                <Bar dataKey="PENDING" fill="#ecc94b" name="Pending" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-72 w-full flex items-center justify-center text-gray-400 italic">
+              Application chart data will appear here after selecting a period and clicking View Chart.
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white shadow rounded-lg p-4">
+          <p className="text-gray-600 mb-4">
+            Users by role for the selected period:
+          </p>
+          {userChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart
+                data={userChartData}
+                margin={{ top: 20, right: 40, left: 0, bottom: 20 }}
+              >
+                <XAxis dataKey="period" />
+                <YAxis allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="total" fill="#6366f1" name="Total" />
+                <Bar dataKey="CLIENT" fill="#3b82f6" name="Client" />
+                <Bar dataKey="COUNSELOR" fill="#10b981" name="Counselor" />
+                {/* <Bar dataKey="ADMIN" fill="#8b5cf6" name="Admin" /> */}
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-72 w-full flex items-center justify-center text-gray-400 italic">
+              User chart data will appear here after selecting a period and clicking View Chart.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

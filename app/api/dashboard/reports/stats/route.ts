@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import connectDB from "@/lib/db";
-import { CounselorApplication } from "@/lib/db/schema";
+import { CounselorApplication, User } from "@/lib/db/schema";
 
 function groupByPeriod(date: Date, period: "weekly" | "monthly") {
   if (period === "weekly") {
@@ -29,26 +29,53 @@ export async function POST(req: Request) {
     }
     await connectDB();
     const { period, start, end } = await req.json();
-    const match: any = {};
-    if (start) match.submittedAt = { $gte: new Date(start) };
-    if (end) {
-      match.submittedAt = match.submittedAt || {};
-      match.submittedAt.$lte = new Date(end);
-    }
     const periodType: "weekly" | "monthly" = ["weekly", "monthly"].includes(period)
       ? period
       : "monthly";
-    const apps = await CounselorApplication.find(match).lean();
-    const grouped: any = {};
-    apps.forEach((app: any) => {
-      const grp = groupByPeriod(new Date(app.submittedAt), periodType);
-      if (!grouped[grp]) {
-        grouped[grp] = { period: grp, total: 0, APPROVED: 0, REJECTED: 0, PENDING: 0 };
+
+    // Application stats: filter by submittedAt
+    const appMatch: Record<string, unknown> = {};
+    if (start) appMatch.submittedAt = { $gte: new Date(start) };
+    if (end) {
+      appMatch.submittedAt = appMatch.submittedAt
+        ? { ...(appMatch.submittedAt as object), $lte: new Date(end) }
+        : { $lte: new Date(end) };
+    }
+    const apps = await CounselorApplication.find(appMatch).lean();
+    const appGrouped: Record<string, { period: string; total: number; APPROVED: number; REJECTED: number; PENDING: number }> = {};
+    apps.forEach((app: { submittedAt?: Date; status?: string } & Record<string, unknown>) => {
+      const grp = groupByPeriod(new Date(app.submittedAt!), periodType);
+      if (!appGrouped[grp]) {
+        appGrouped[grp] = { period: grp, total: 0, APPROVED: 0, REJECTED: 0, PENDING: 0 };
       }
-      grouped[grp].total++;
-      grouped[grp][app.status]++;
+      appGrouped[grp].total++;
+      const status = app.status as "APPROVED" | "REJECTED" | "PENDING";
+      if (status in appGrouped[grp]) appGrouped[grp][status]++;
     });
-    return NextResponse.json(Object.values(grouped));
+    const applicationStats = Object.values(appGrouped);
+
+    // User stats: filter by createdAt, group by role (CLIENT, COUNSELOR, ADMIN)
+    const userMatch: Record<string, unknown> = {};
+    if (start) userMatch.createdAt = { $gte: new Date(start) };
+    if (end) {
+      userMatch.createdAt = userMatch.createdAt
+        ? { ...(userMatch.createdAt as object), $lte: new Date(end) }
+        : { $lte: new Date(end) };
+    }
+    const users = await User.find(userMatch).lean();
+    const userGrouped: Record<string, { period: string; total: number; CLIENT: number; COUNSELOR: number; }> = {};
+    users.forEach((user: { createdAt?: Date; role?: string } & Record<string, unknown>) => {
+      const grp = groupByPeriod(new Date(user.createdAt!), periodType);
+      if (!userGrouped[grp]) {
+        userGrouped[grp] = { period: grp, total: 0, CLIENT: 0, COUNSELOR: 0};
+      }
+      userGrouped[grp].total++;
+      const role = (user.role ?? "CLIENT") as "CLIENT" | "COUNSELOR";
+      if (role in userGrouped[grp]) userGrouped[grp][role]++;
+    });
+    const userStats = Object.values(userGrouped);
+
+    return NextResponse.json({ applicationStats, userStats });
   } catch (error) {
     console.error("Error fetching report stats:", error);
     return new NextResponse(
