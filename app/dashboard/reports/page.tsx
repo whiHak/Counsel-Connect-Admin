@@ -96,14 +96,14 @@ export default function DashboardReportsPage() {
           />
         </div>
         <button
-          className="ml-2 bg-blue-600 text-white px-4 py-2 rounded font-semibold disabled:bg-blue-300"
+          className="ml-2 bg-blue-600 text-white px-4 py-2 rounded font-semibold disabled:bg-blue-300 cursor-pointer"
           disabled={loading}
           onClick={fetchChartData}
         >
           {loading ? "Loading..." : "View Chart"}
         </button>
         <button
-          className="ml-2 bg-green-600 text-white px-4 py-2 rounded font-semibold disabled:bg-green-300"
+          className="ml-2 bg-green-600 text-white px-4 py-2 rounded font-semibold disabled:bg-green-300 cursor-pointer"
           disabled={downloading}
           onClick={fetchReport}
         >
