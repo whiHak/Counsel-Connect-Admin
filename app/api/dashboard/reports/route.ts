@@ -63,6 +63,8 @@ export async function POST(req: Request) {
       { header: "Pending", key: "PENDING", width: 15 }
     ];
     Object.values(grouped).forEach((row: any) => ws.addRow(row));
+    console.log("Grouped data:", Object.values(grouped));
+    console.log("Number of groups:", Object.keys(grouped).length);
 
     // Response as Blob (xlsx file)
     const buf = await workbook.xlsx.writeBuffer();

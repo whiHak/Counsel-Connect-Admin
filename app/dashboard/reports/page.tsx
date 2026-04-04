@@ -46,7 +46,9 @@ export default function DashboardReportsPage() {
         body: JSON.stringify({ period, start: fromDate, end: toDate })
       });
       if (res.ok) {
+        console.log(res.body)
         const blob = await res.blob();
+        console.log("Generated report file:", blob);
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
