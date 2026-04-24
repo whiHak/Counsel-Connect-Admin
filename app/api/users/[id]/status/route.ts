@@ -5,7 +5,7 @@ import { User } from "@/lib/db/schema";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession();
@@ -15,7 +15,8 @@ export async function PATCH(
       });
     }
 
-    const { id } = params;
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
     const body = await request.json();
     const status = body?.status as "ACTIVE" | "SUSPENDED";
     const suspensionReason = (body?.suspensionReason as string | undefined) || "";

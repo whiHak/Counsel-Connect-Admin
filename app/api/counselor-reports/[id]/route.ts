@@ -5,7 +5,7 @@ import { CounselorReport } from "@/lib/db/schema";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -15,7 +15,8 @@ export async function PATCH(
       });
     }
 
-    const { id } = params;
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
     const { action } = await request.json();
 
     const nextStatus =
