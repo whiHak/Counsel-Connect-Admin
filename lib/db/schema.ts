@@ -9,6 +9,18 @@ const userSchema = new mongoose.Schema({
     enum: ["CLIENT", "COUNSELOR", "ADMIN"],
     default: "CLIENT",
   },
+  status: {
+    type: String,
+    enum: ["ACTIVE", "SUSPENDED"],
+    default: "ACTIVE",
+    index: true,
+  },
+  suspendedAt: Date,
+  suspensionReason: {
+    type: String,
+    trim: true,
+    maxlength: 500,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -114,9 +126,110 @@ const counselorApplicationSchema = new mongoose.Schema({
   reviewNotes: String,
 });
 
+const withdrawalRequestSchema = new mongoose.Schema(
+  {
+    counselorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    payoutMethod: {
+      type: String,
+      enum: ["bank_transfer", "mobile_money"],
+      required: true,
+    },
+    accountName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    accountNumber: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    bankName: {
+      type: String,
+      trim: true,
+    },
+    phoneNumber: {
+      type: String,
+      trim: true,
+    },
+    note: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected", "paid"],
+      default: "pending",
+      index: true,
+    },
+    reviewedAt: Date,
+    reviewNote: String,
+  },
+  { timestamps: true },
+);
+
+const counselorReportSchema = new mongoose.Schema(
+  {
+    reporterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    counselorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+    chatRoomId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ChatRoom",
+      required: true,
+      index: true,
+    },
+    category: {
+      type: String,
+      enum: ["harassment", "inappropriate_behavior", "no_show", "fraud", "other"],
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 2000,
+    },
+    status: {
+      type: String,
+      enum: ["submitted", "under_review", "resolved", "rejected"],
+      default: "submitted",
+      index: true,
+    },
+  },
+  { timestamps: true },
+);
+
 export const User = mongoose.models.User || mongoose.model("User", userSchema);
 export const Counselor =
   mongoose.models.Counselor || mongoose.model("Counselor", counselorSchema);
 export const CounselorApplication =
   mongoose.models.CounselorApplication ||
   mongoose.model("CounselorApplication", counselorApplicationSchema);
+export const WithdrawalRequest =
+  mongoose.models.WithdrawalRequest ||
+  mongoose.model("WithdrawalRequest", withdrawalRequestSchema);
+
+export const CounselorReport =
+  mongoose.models.CounselorReport ||
+  mongoose.model("CounselorReport", counselorReportSchema);

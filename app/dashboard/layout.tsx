@@ -7,7 +7,6 @@ import {
   LayoutDashboard, 
   Users, 
   FileCheck, 
-  Settings, 
   LogOut 
 } from "lucide-react";
 
@@ -16,6 +15,8 @@ const navigation = [
   { name: "Counselor Applications", href: "/dashboard/applications", icon: FileCheck },
   { name: "Users", href: "/dashboard/users", icon: Users },
   { name: "Reports", href: "/dashboard/reports", icon: FileCheck },
+  { name: "Withdrawal Requests", href: "/dashboard/withdrawal-requests", icon: FileCheck },
+  { name: "Counselor Reports", href: "/dashboard/counselor-reports", icon: FileCheck },
   // { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
